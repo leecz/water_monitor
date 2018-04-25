@@ -6,7 +6,7 @@
         <div>设备号: {{data.devEui}}</div>
       </div>
       <div class="info">
-        <div>水位: <span>{{data.level}}</span>cm</div>
+        <div>水位: <span>{{data.level}}</span>mm</div>
         <div>温度: <span>{{data.temperature}}</span>&#8451;</div>
       </div>
       <div>{{ $timeFormat(data.dataTime)}}</div>
