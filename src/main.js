@@ -9,6 +9,12 @@ Vue.config.productionTip = false
 import timeFormater from './plugins/timeFormater'
 Vue.use(timeFormater)
 
+import echartResize from './plugins/echartResize'
+Vue.use(echartResize)
+
+import scrollToFixed from './plugins/scrollToFixed'
+Vue.use(scrollToFixed)
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

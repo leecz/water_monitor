@@ -1,42 +1,133 @@
 <template>
   <div class="water-level">
-    <header>水位监测实时数据</header>
-    <div v-for="data in datas" :key="data.id" class="row-item">
-      <div class="devId">
-        <div>设备号: {{data.devEui}}</div>
-      </div>
-      <div class="info">
-        <div>水位: <span>{{data.level}}</span>mm</div>
-        <div>温度: <span>{{data.temperature}}</span>&#8451;</div>
-      </div>
-      <div>{{ $timeFormat(data.dataTime)}}</div>
+    <div class="chart-wrap" 
+      :style="{height: chartWrapHeight}">
+      <div class="header"> 蕉东水闸物联水位站 </div>
+      <div id="chart"
+        :style="{height: chartHeight}"
+        v-on-echart-resize></div>
     </div>
+
+    <WaterLevel :style="{'margin-top': marginTop}"></WaterLevel>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+import WaterLevel from '@/components/WaterLevel'
+const echarts = require('echarts')
+
 export default {
+  components: {
+    WaterLevel
+  },
   data() {
     return {
-      datas: [],
-      timeId: ''
+      result: {},
+      timeId: '',
+      chart: {}
+    }
+  },
+  computed: {
+    chartWrapHeight() {
+      return (window.innerHeight / 2) + 'px'
+    },
+    chartHeight() {
+      return (window.innerHeight / 2 - 50) + 'px'
+    },
+    marginTop() {
+      return (window.innerHeight / 2 + 5) + 'px'
     }
   },
   methods: {
     fetchData() {
-      axios.get('http://api.bp.zlopo.com:20000/boss-microbus-service/v1/WaterLevel/queryWaterLevel').then(res => {
+      axios.get('http://api.bp.zlopo.com:20000/boss-microbus-service/v1/WaterLevel/queryWaterLevelByTime').then(res => {
         if (res.data.code === 200) {
-          this.datas = res.data.result.datas
+          this.result = res.data.result
+          // this.result.time.length = 300
+          // this.result.wl.length = 300
+          this.setChartOpt()
         }
       })
     },
-    loopFetch(){
+    loopFetch() {
       this.fetchData()
-      this.timeId = setTimeout(this.loopFetch, 5000) 
+      this.timeId = setTimeout(this.loopFetch, 300000)
+    },
+    setChartOpt() {
+      this.chart.setOption({
+        tooltip: {
+          trigger: 'axis',
+        },
+        grid: [
+          {
+            top: 40,
+            left: 40,
+            right: '3%',
+            bottom: 40,
+          }
+        ],
+        xAxis: {
+          type: 'category',
+          position: 'bottom',
+          data: this.result.time,
+          axisLine: {
+            onZero: false
+          },
+          axisLabel: {
+            margin: 15,
+            textStyle: {
+              fontSize: 12
+            }
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '单位 米',
+          scale: true,
+          axisLabel: {
+            textStyle: {
+              fontSize: 12
+            }
+          }
+          // max: 'dataMax',
+          // boundaryGap: [0.2, 0.2]
+        },
+        dataZoom: [
+          {
+            type: 'inside',
+            show: false,
+            realtime: true,
+            start: 0,
+            end: 100,
+            filterMode: 'none'
+          }
+        ],
+        color: ["#5EBEFC"],
+        series: [{
+          name: '水位',
+          data: this.result.wl,
+          type: 'line',
+          smooth: true,
+          hoverAnimation: false,
+          areaStyle: {
+            normal: {
+              origin: 'start',
+              // color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+              //   offset: 0,
+              //   color: 'rgba(216, 244, 247,1)'
+              // }, {
+              //   offset: 1,
+              //   color: 'rgba(216, 244, 247,1)'
+              // }], false)
+            }
+          },
+        }]
+      })
     }
   },
   mounted() {
+    this.chart = echarts.init(document.getElementById('chart'))
     this.loopFetch()
   },
   beforeDestroy() {
@@ -47,34 +138,42 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-header {
-  font-size: 1.4em;
+.water-level {
+  background: rgb(244, 245, 246);
+  height: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border: 1px solid rgb(244, 245, 246);
+}
+.chart-wrap {
+  width: 100%;
+  max-width: 800px;
+  position: fixed;
+  top: 0;
+}
+.header {
+  font-size: 18px;
   text-align: center;
   padding: 15px;
+  box-sizing: border-box;
+  height: 50px;
+  background: rgb(244, 245, 246);
 }
-.water-level {
-  padding: 5px;
-}
-.row-item {
-  margin-bottom: 10px;
-  padding: 10px;
+#chart {
+  width: 100%;
   background: white;
-  border: 1px solid #f8f7f7;
+  border-bottom: 1px solid rgb(244, 245, 246);
 }
-.info {
-  height: 2em;
+.navbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
-.info span {
-  font-size: 1.1em;
-}
-.devId {
-  font-size: 0.8em;
-  color: #666666;
-}
-.row-foot{
-  font-size: 0.8em;
+.top-btn {
+  margin: 0 5px 5px;
+  border-radius: 3px;
+  background: white;
+  padding: 6px;
+  font-size: 14px;
 }
 </style>
