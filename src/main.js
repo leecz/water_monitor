@@ -15,6 +15,10 @@ Vue.use(echartResize)
 import scrollToFixed from './plugins/scrollToFixed'
 Vue.use(scrollToFixed)
 
+import { Table, TableColumn } from 'element-ui'
+Vue.component(Table.name, Table)
+Vue.component(TableColumn.name, TableColumn)
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
