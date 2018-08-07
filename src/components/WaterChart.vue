@@ -32,21 +32,35 @@ export default {
       //   yName: 'xxx' //米
       //    name: '水位',
       // }
+      let type = this.datas.type || 'line'
       let series = this.datas.data.map((el, i) => {
         return {
           name: this.datas.name[i],
           data: el,
-          type: 'line',
+          type: type,
           smooth: true,
-          hoverAnimation: false,
-          itemStyle: {
-            normal: { areaStyle: { type: 'default' } },
-            emphasis: {
-              opacity: 0.3
-            }
-          }
+          hoverAnimation: false
+          // itemStyle: {
+          //   normal: { areaStyle: { type: 'default' } },
+          //   emphasis: {
+          //     opacity: 0.3
+          //   }
+          // }
         }
       })
+      let defautY = {
+        type: 'value',
+        name: this.datas.unit,
+        scale: true,
+        axisLabel: {
+          textStyle: {
+            fontSize: 12
+          }
+        }
+      }
+      let yAxis = this.datas.isWater
+        ? Object.assign(defautY, { max: 2.5, min: -2.0 })
+        : defautY
       this.chart.setOption(
         {
           tooltip: {
@@ -54,36 +68,30 @@ export default {
           },
           grid: [
             {
-              top: 40,
+              top: 30,
               left: 40,
               right: '3%',
-              bottom: 40
+              bottom: 60
             }
           ],
           xAxis: {
             type: 'category',
             position: 'bottom',
-            data: this.datas.time.map(time => this.$timeFormat(time)),
+            data: this.datas.time.map(time =>
+              this.$timeFormat(time, 'MM-dd hh:mm')
+            ),
             axisLine: {
               onZero: false
             },
             axisLabel: {
               margin: 15,
+              rotate: 30,
               textStyle: {
                 fontSize: 12
               }
             }
           },
-          yAxis: {
-            type: 'value',
-            name: this.datas.unit,
-            scale: true,
-            axisLabel: {
-              textStyle: {
-                fontSize: 12
-              }
-            }
-          },
+          yAxis,
           dataZoom: [
             {
               type: 'inside',

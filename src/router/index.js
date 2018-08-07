@@ -10,10 +10,6 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: Main
-    },
-    {
-      path: '/jiaoxi',
       component: WaterMonitor
     },
     {

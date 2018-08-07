@@ -1,13 +1,13 @@
 <template>
   <div class="water-level">
     <div class="chart-wrap" :style="{height: chartWrapHeight}">
-      <div class="header"> 蕉西水闸物联水位站 </div>
+      <div class="header"> 蕉东水闸物联水位站 </div>
       <div class="btn-group">
         <button class="button" @click="handleClick('water')">水位</button>
         <button class="button" @click="handleClick('rh')">雨量</button>
         <button class="button" @click="handleClick('ws')">风速</button>
         <button class="button" @click="handleClick('wd')">风向</button>
-        <button class="button" @click="handleClick('sewer')">下水道水位</button>
+        <button class="button" @click="handleClick('sewer')">管井水位</button>
       </div>
       <WaterChart :datas="currentChart" :style="{height: chartHeight}"></WaterChart>
     </div>
@@ -19,12 +19,38 @@
             <div>{{$timeFormat(scope.row.dataTime)}}</div>
           </template>
         </el-table-column>
-        <el-table-column label="内水位" prop="innerLevel" align="center"></el-table-column>
-        <el-table-column label="外水位" prop="outerLevel" align="center"></el-table-column>
-        <el-table-column label="时雨量" prop="dtuRainHour" align="center"></el-table-column>
-        <el-table-column label="风速" prop="dtuWindSpeed" align="center"></el-table-column>
-        <el-table-column label="风向" prop="dtuWindDirection" align="center"></el-table-column>
-        <el-table-column label="下水道" prop="sewerLevel" align="center"></el-table-column>
+        <el-table-column label="内水位" prop="innerLevel" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.innerLevel == null ? '-' : scope.row.innerLevel }}
+          </template>
+        </el-table-column>
+        <el-table-column label="外水位" prop="outerLevel" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.outerLevel == null ? '-' : scope.row.outerLevel }}
+          </template>
+        </el-table-column>
+        <el-table-column label="时雨量" prop="dtuRainHour" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.dtuRainHour == null ? '-' : scope.row.dtuRainHour }}
+          </template>
+
+        </el-table-column>
+        <el-table-column label="风速" prop="dtuWindSpeed" align="center">
+
+          <template slot-scope="scope">
+            {{ scope.row.dtuWindSpeed == null ? '-' : scope.row.dtuWindSpeed }}
+          </template>
+        </el-table-column>
+        <el-table-column label="风向" prop="dtuWindDirection" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.dtuWindDirection == null ? '-' : scope.row.dtuWindDirection }}
+          </template>
+        </el-table-column>
+        <el-table-column label="管井" prop="sewerLevel" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.sewerLevel == null ? '-' : scope.row.sewerLevel }}
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
@@ -37,7 +63,7 @@ const echarts = require('echarts')
 import WaterChart from '../components/WaterChart'
 
 const url =
-  'http://172.16.1.119:30000/v1/hydrogy/query/record/?inner=FFFFFFFF01ABF04F&outer=FFFFFFFF01ABF04E&dtu=985DADFFFF7EF43B&sewer=FFFFFFFF01ABF04F'
+  'http://api.bp.zlopo.com:20000/boss-microbus-service/v1/hydrogy/query/record/?inner=FFFFFFFF0180BB11&outer=FFFFFFFF01F732F0&dtu=FFFFFFFF00B21E38&sewer=FFFFFFFF013E6CA4'
 export default {
   components: {
     WaterChart
@@ -52,16 +78,16 @@ export default {
   },
   computed: {
     tableHeight() {
-      return window.innerHeight / 2
+      return window.innerHeight / 2 - 55
     },
     chartWrapHeight() {
-      return window.innerHeight / 2 + 'px'
+      return window.innerHeight / 2 + 50 + 'px'
     },
     chartHeight() {
-      return window.innerHeight / 2 - 94 + 'px'
+      return window.innerHeight / 2 - 36 + 'px'
     },
     marginTop() {
-      return window.innerHeight / 2 + 5 + 'px'
+      return window.innerHeight / 2 + 55 + 'px'
     }
   },
   methods: {
@@ -75,19 +101,22 @@ export default {
           data: [result.chart_data_rh],
           unit: '单位 mm',
           name: ['雨量'],
-          time: result.chart_time_rh
+          time: result.chart_time_rh,
+          type: 'bar'
         } // 雨量
         this.sewer = {
-          name: ['下水道水位'],
-          unit: '单位 mm',
+          name: ['管井水位'],
+          unit: '单位 m',
           data: [result.chart_data_sewer],
-          time: result.chart_time_sewer
+          time: result.chart_time_sewer,
+          isWater: true
         } // 下水道
         this.water = {
           data: [result.chart_data_inner, result.chart_data_outer],
-          unit: '单位 mm',
+          unit: '单位 m',
           name: ['内水位', '外水位'],
-          time: result.chart_time_water // 水位
+          time: result.chart_time_water, // 水位
+          isWater: true
         }
         this.wd = {
           name: ['风向'],
@@ -157,7 +186,7 @@ export default {
   overflow: hidden;
 
   margin: 1px;
-  padding: 10px 12px;
+  padding: 5px 12px;
 
   cursor: pointer;
   user-select: none;
@@ -168,7 +197,6 @@ export default {
   text-transform: none;
   text-transform: capitalize;
 
-  border: 0 none;
   border-radius: 4px;
 
   font-size: 13px;
@@ -181,16 +209,14 @@ export default {
 
   justify-content: center;
   align-items: center;
-  flex: 0 0 80px;
-
-  box-shadow: 2px 5px 10px #e4e4e4;
+  background: #36a9e5;
 }
 .button {
-  color: #202129;
+  color: white;
 }
 .button:focus {
-  outline: 1px solid #5ebefc;
-  outline-offset: -1px;
+  outline: none;
+  background: #1970b4;
 }
 .button:active {
   transition: all 150ms linear;
